@@ -32,6 +32,7 @@ type OrderRepository interface {
 	Store(order Order) error
 	FindAll() ([]Order, error)
 	FindByID(id string) (Order, error)
+	UpdateStatus(id string, status string) error
 }
 
 func (o *Order) TotalPrice() float64 {

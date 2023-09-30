@@ -15,7 +15,7 @@ func NewCreateOrderUseCase(orderRepository entity.OrderRepository) *CreateOrderU
 	}
 }
 
-func (uc CreateOrderUseCase) Execute(input dto.OrderDto) (*dto.OrderDto, error) {
+func (uc CreateOrderUseCase) Execute(input dto.OrderDto) (*dto.OrderOutputDto, error) {
 	orderItems := input.Items
 	var items []entity.OrderItem
 
@@ -40,12 +40,15 @@ func (uc CreateOrderUseCase) Execute(input dto.OrderDto) (*dto.OrderDto, error) 
 		return nil, err
 	}
 
-	output := &dto.OrderDto{
+	output := &dto.OrderOutputDto{
 		ID:         order.ID,
 		Items:      orderItems,
 		Discount:   order.Discount,
 		Status:     order.Status,
 		TotalPrice: order.TotalPrice(),
+		CompanyId:  order.CompanyId,
+		CreatedAt:  order.CreatedAt,
+		UpdatedAt:  order.UpdatedAt,
 	}
 
 	return output, nil

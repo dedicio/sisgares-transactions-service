@@ -1,7 +1,6 @@
 package usecase
 
 import (
-	"github.com/dedicio/sisgares-transactions-service/internal/dto"
 	"github.com/dedicio/sisgares-transactions-service/internal/entity"
 )
 
@@ -15,8 +14,8 @@ func NewUpdateOrderStatusUseCase(orderRepository entity.OrderRepository) *Update
 	}
 }
 
-func (uc UpdateOrderStatusUseCase) Execute(input dto.OrderDto) error {
-	err := uc.Repository.UpdateStatus(input.ID, input.Status)
+func (uc UpdateOrderStatusUseCase) Execute(orderId string, orderStatus string) error {
+	err := uc.Repository.UpdateStatus(orderId, orderStatus)
 	if err != nil {
 		return err
 	}

@@ -16,7 +16,7 @@ func NewOrderRepositoryMysql(db *sql.DB) *OrderRepositoryMysql {
 	}
 }
 
-func (pr *OrderRepositoryMysql) FindById(id string) (*entity.Order, error) {
+func (pr *OrderRepositoryMysql) FindByID(id string) (*entity.Order, error) {
 	var order entity.Order
 
 	sqlOrderStatement := `

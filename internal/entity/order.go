@@ -15,6 +15,7 @@ const (
 )
 
 type OrderItem struct {
+	ID        string
 	ProductID string
 	Quantity  int64
 	Price     float64
@@ -26,10 +27,11 @@ type Order struct {
 	Discount      float64
 	Status        string
 	PaymentMethod string
+	CompanyId     string
 }
 
 type OrderRepository interface {
-	Store(order Order) error
+	Create(order Order) error
 	FindAll() ([]Order, error)
 	FindByID(id string) (Order, error)
 	UpdateStatus(id string, status string) error

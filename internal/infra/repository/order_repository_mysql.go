@@ -25,6 +25,8 @@ func (pr *OrderRepositoryMysql) FindById(id string) (*entity.Order, error) {
 			discount,
 			status,
 			payment_method,
+			created_at,
+			updated_at
 		FROM orders
 		WHERE id = ?
 			AND deleted_at IS NULL
@@ -34,6 +36,8 @@ func (pr *OrderRepositoryMysql) FindById(id string) (*entity.Order, error) {
 		&order.Discount,
 		&order.Status,
 		&order.PaymentMethod,
+		&order.CreatedAt,
+		&order.UpdatedAt,
 	)
 
 	if err != nil {
@@ -72,6 +76,8 @@ func (pr *OrderRepositoryMysql) FindAll() ([]*entity.Order, error) {
 			discount,
 			status,
 			payment_method,
+			created_at,
+			updated_at
 		FROM orders 
 		WHERE deleted_at IS NULL
 	`
@@ -86,23 +92,27 @@ func (pr *OrderRepositoryMysql) FindAll() ([]*entity.Order, error) {
 		var order entity.Order
 		err := rows.Scan(
 			&order.ID,
+			&order.Discount,
+			&order.Status,
+			&order.PaymentMethod,
+			&order.CreatedAt,
+			&order.UpdatedAt,
 		)
 		if err != nil {
 			return nil, err
 		}
-		orders = append(orders, &order)
-	}
 
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-
-	for _, order := range orders {
 		orderItems, err := pr.FindAllOrderItemsByOrderId(order.ID)
 		if err != nil {
 			return nil, err
 		}
 		order.Items = orderItems
+
+		orders = append(orders, &order)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
 	}
 
 	return orders, nil

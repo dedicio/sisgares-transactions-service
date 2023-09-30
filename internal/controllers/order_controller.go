@@ -76,16 +76,9 @@ func (lc *OrderController) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (lc *OrderController) UpdateStatus(w http.ResponseWriter, r *http.Request) {
-	payload := json.NewDecoder(r.Body)
-	order := dto.OrderDto{}
-	err := payload.Decode(&order)
-
-	if err != nil {
-		render.Render(w, r, httpResponsePkg.ErrInvalidRequest(err))
-		return
-	}
-
-	err = usecase.NewUpdateOrderStatusUseCase(lc.Repository).Execute(order)
+	orderId := chi.URLParam(r, "id")
+	orderStatus := chi.URLParam(r, "status")
+	err := usecase.NewUpdateOrderStatusUseCase(lc.Repository).Execute(orderId, orderStatus)
 
 	if err != nil {
 		render.Render(w, r, httpResponsePkg.ErrInternalServerError(err))
@@ -93,7 +86,8 @@ func (lc *OrderController) UpdateStatus(w http.ResponseWriter, r *http.Request) 
 	}
 
 	output := &dto.OrderResponseDto{
-		ID: order.ID,
+		ID:     orderId,
+		Status: orderStatus,
 	}
 
 	render.Render(w, r, httpResponsePkg.NewOrderResponse(output))

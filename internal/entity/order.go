@@ -34,8 +34,8 @@ type Order struct {
 
 type OrderRepository interface {
 	Create(order *Order) error
-	FindAll() ([]Order, error)
-	FindByID(id string) (Order, error)
+	FindAll() ([]*Order, error)
+	FindByID(id string) (*Order, error)
 	UpdateStatus(id string, status string) error
 }
 

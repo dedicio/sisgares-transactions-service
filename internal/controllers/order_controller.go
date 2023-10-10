@@ -23,7 +23,8 @@ func NewOrderController(orderRepository entity.OrderRepository) *OrderController
 }
 
 func (lc *OrderController) FindAll(w http.ResponseWriter, r *http.Request) {
-	orders, err := usecase.NewListOrdersUseCase(lc.Repository).Execute()
+	companyID := r.Header.Get("X-Company-ID")
+	orders, err := usecase.NewListOrdersUseCase(lc.Repository).Execute(companyID)
 
 	if err != nil {
 		render.Render(w, r, httpResponsePkg.ErrInternalServerError(err))
@@ -46,6 +47,7 @@ func (lc *OrderController) FindById(w http.ResponseWriter, r *http.Request) {
 }
 
 func (lc *OrderController) Create(w http.ResponseWriter, r *http.Request) {
+	companyID := r.Header.Get("X-Company-ID")
 	payload := json.NewDecoder(r.Body)
 	order := dto.OrderDto{}
 	err := payload.Decode(&order)
@@ -55,6 +57,7 @@ func (lc *OrderController) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	order.CompanyId = companyID
 	orderSaved, err := usecase.NewCreateOrderUseCase(lc.Repository).Execute(order)
 
 	if err != nil {

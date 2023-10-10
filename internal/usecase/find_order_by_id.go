@@ -17,13 +17,17 @@ func NewFindOrderByIdUseCase(orderRepository entity.OrderRepository) *FindOrderB
 
 func (uc FindOrderByIdUseCase) Execute(id string) (*dto.OrderResponseDto, error) {
 	order, err := uc.OrderRepository.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
 
+	items, err := uc.OrderRepository.FindAllOrderItemsByOrderId(id)
 	if err != nil {
 		return nil, err
 	}
 
 	var orderItems []dto.OrderItemDto
-	for _, orderItem := range order.Items {
+	for _, orderItem := range items {
 		orderItemDto := dto.OrderItemDto{
 			ID:        orderItem.ID,
 			ProductID: orderItem.ProductID,

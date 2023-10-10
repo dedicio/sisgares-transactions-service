@@ -16,16 +16,16 @@ func NewOrderRoutes(repository entity.OrderRepository) *OrderRoutes {
 	}
 }
 
-func (lr OrderRoutes) Routes() chi.Router {
+func (or OrderRoutes) Routes() chi.Router {
 	router := chi.NewRouter()
 
 	router.Route("/", func(router chi.Router) {
-		router.Get("/", lr.Controller.FindAll)
-		router.Post("/", lr.Controller.Create)
+		router.Get("/", or.Controller.FindAll)
+		router.Post("/", or.Controller.Create)
 
 		router.Route("/{id}", func(router chi.Router) {
-			router.Get("/", lr.Controller.FindById)
-			router.Patch("/status/{status}", lr.Controller.UpdateStatus)
+			router.Get("/", or.Controller.FindById)
+			router.Patch("/status/{status}", or.Controller.UpdateStatus)
 		})
 	})
 

@@ -3,6 +3,7 @@ package entity
 import "github.com/dedicio/sisgares-transactions-service/pkg/utils"
 
 const (
+	OrderStatusOpen    = "open"
 	OrderStatusPending = "pending"
 	OrderStatusPaid    = "paid"
 	OrderStatusCancel  = "cancel"
@@ -16,6 +17,7 @@ const (
 
 type OrderItem struct {
 	ID        string
+	OrderID   string
 	ProductID string
 	Quantity  int64
 	Price     float64
@@ -23,7 +25,7 @@ type OrderItem struct {
 
 type Order struct {
 	ID            string
-	Items         []OrderItem
+	Items         []*OrderItem
 	Discount      float64
 	Status        string
 	PaymentMethod string
@@ -34,9 +36,10 @@ type Order struct {
 
 type OrderRepository interface {
 	Create(order *Order) error
-	FindAll() ([]*Order, error)
+	FindAll(companyID string) ([]*Order, error)
 	FindByID(id string) (*Order, error)
 	UpdateStatus(id string, status string) error
+	FindAllOrderItemsByOrderId(orderId string) ([]*OrderItem, error)
 }
 
 func (o *Order) TotalPrice() float64 {
@@ -50,7 +53,7 @@ func (o *Order) TotalPrice() float64 {
 }
 
 func NewOrder(
-	items []OrderItem,
+	items []*OrderItem,
 	discount float64,
 	paymentMethod string,
 	companyId string,

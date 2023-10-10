@@ -6,17 +6,17 @@ import (
 	"github.com/dedicio/sisgares-transactions-service/internal/entity"
 )
 
-type OrderRepositoryMysql struct {
+type OrderRepositoryPostgresql struct {
 	db *sql.DB
 }
 
-func NewOrderRepositoryMysql(db *sql.DB) *OrderRepositoryMysql {
-	return &OrderRepositoryMysql{
+func NewOrderRepositoryPostgresql(db *sql.DB) *OrderRepositoryPostgresql {
+	return &OrderRepositoryPostgresql{
 		db: db,
 	}
 }
 
-func (pr *OrderRepositoryMysql) FindByID(id string) (*entity.Order, error) {
+func (pr *OrderRepositoryPostgresql) FindByID(id string) (*entity.Order, error) {
 	var order entity.Order
 
 	sqlOrderStatement := `
@@ -28,7 +28,7 @@ func (pr *OrderRepositoryMysql) FindByID(id string) (*entity.Order, error) {
 			created_at,
 			updated_at
 		FROM orders
-		WHERE id = ?
+		WHERE id = $1
 			AND deleted_at IS NULL
 	`
 	err := pr.db.QueryRow(sqlOrderStatement, id).Scan(
@@ -50,7 +50,7 @@ func (pr *OrderRepositoryMysql) FindByID(id string) (*entity.Order, error) {
 			quantity,
 			price
 		FROM order_items
-		WHERE order_id = ?
+		WHERE order_id = $1
 			AND deleted_at IS NULL
 	`
 	rows, err := pr.db.Query(sqlOrderItemStatement, id)
@@ -69,7 +69,7 @@ func (pr *OrderRepositoryMysql) FindByID(id string) (*entity.Order, error) {
 	return &order, nil
 }
 
-func (pr *OrderRepositoryMysql) FindAll() ([]*entity.Order, error) {
+func (pr *OrderRepositoryPostgresql) FindAll(companyID string) ([]*entity.Order, error) {
 	sqlOrderStatement := `
 		SELECT
 			id,
@@ -79,9 +79,10 @@ func (pr *OrderRepositoryMysql) FindAll() ([]*entity.Order, error) {
 			created_at,
 			updated_at
 		FROM orders 
-		WHERE deleted_at IS NULL
+		WHERE company_id = $1
+			AND deleted_at IS NULL
 	`
-	rows, err := pr.db.Query(sqlOrderStatement)
+	rows, err := pr.db.Query(sqlOrderStatement, companyID)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +119,7 @@ func (pr *OrderRepositoryMysql) FindAll() ([]*entity.Order, error) {
 	return orders, nil
 }
 
-func (pr *OrderRepositoryMysql) Create(order *entity.Order) error {
+func (pr *OrderRepositoryPostgresql) Create(order *entity.Order) error {
 	sql := `
 		INSERT INTO
 			orders (
@@ -131,11 +132,11 @@ func (pr *OrderRepositoryMysql) Create(order *entity.Order) error {
 				updated_at
 			)
 		VALUES (
-			?,
-			?,
-			?,
-			?,
-			?,
+			$1,
+			$2,
+			$3,
+			$4,
+			$5,
 			NOW(),
 			NOW()
 		)
@@ -166,11 +167,11 @@ func (pr *OrderRepositoryMysql) Create(order *entity.Order) error {
 					updated_at
 				)
 			VALUES (
-				?,
-				?,
-				?,
-				?,
-				?,
+				$1,
+				$2,
+				$3,
+				$4,
+				$5,
 				NOW(),
 				NOW()
 			)
@@ -193,14 +194,14 @@ func (pr *OrderRepositoryMysql) Create(order *entity.Order) error {
 	return nil
 }
 
-func (pr *OrderRepositoryMysql) UpdateStatus(orderId string, status string) error {
+func (pr *OrderRepositoryPostgresql) UpdateStatus(orderId string, status string) error {
 	sql := `
 		UPDATE orders
 		SET
-			status = ?,
+			status = $1,
 			updated_at = NOW()
 		WHERE
-			id = ?
+			id = $2
 	`
 	_, err := pr.db.Exec(
 		sql,
@@ -215,14 +216,14 @@ func (pr *OrderRepositoryMysql) UpdateStatus(orderId string, status string) erro
 	return nil
 }
 
-func (pr *OrderRepositoryMysql) FindAllOrderItemsByOrderId(orderId string) ([]entity.OrderItem, error) {
+func (pr *OrderRepositoryPostgresql) FindAllOrderItemsByOrderId(orderId string) ([]*entity.OrderItem, error) {
 	sql := `
 		SELECT
 			product_id,
 			quantity,
 			price
 		FROM order_items
-		WHERE order_id = ?
+		WHERE order_id = $1
 			AND deleted_at IS NULL
 	`
 	rows, err := pr.db.Query(sql)
@@ -231,7 +232,7 @@ func (pr *OrderRepositoryMysql) FindAllOrderItemsByOrderId(orderId string) ([]en
 	}
 	defer rows.Close()
 
-	var orderItems []entity.OrderItem
+	var orderItems []*entity.OrderItem
 	for rows.Next() {
 		var orderItem entity.OrderItem
 		err := rows.Scan(
@@ -242,7 +243,7 @@ func (pr *OrderRepositoryMysql) FindAllOrderItemsByOrderId(orderId string) ([]en
 		if err != nil {
 			return nil, err
 		}
-		orderItems = append(orderItems, orderItem)
+		orderItems = append(orderItems, &orderItem)
 	}
 
 	if err = rows.Err(); err != nil {

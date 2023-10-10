@@ -15,8 +15,8 @@ func NewListOrdersUseCase(orderRepository entity.OrderRepository) *ListOrdersUse
 	}
 }
 
-func (uc ListOrdersUseCase) Execute() ([]*dto.OrderResponseDto, error) {
-	orders, err := uc.Repository.FindAll()
+func (uc ListOrdersUseCase) Execute(companyID string) ([]*dto.OrderResponseDto, error) {
+	orders, err := uc.Repository.FindAll(companyID)
 	if err != nil {
 		return nil, err
 	}

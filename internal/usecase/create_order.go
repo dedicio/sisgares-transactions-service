@@ -17,10 +17,10 @@ func NewCreateOrderUseCase(orderRepository entity.OrderRepository) *CreateOrderU
 
 func (uc CreateOrderUseCase) Execute(input dto.OrderDto) (*dto.OrderOutputDto, error) {
 	orderItems := input.Items
-	var items []entity.OrderItem
+	var items []*entity.OrderItem
 
 	for _, item := range orderItems {
-		items = append(items, entity.OrderItem{
+		items = append(items, &entity.OrderItem{
 			ID:        item.ID,
 			ProductID: item.ProductID,
 			Quantity:  item.Quantity,

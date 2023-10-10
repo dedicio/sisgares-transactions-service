@@ -23,15 +23,15 @@ var (
 
 func main() {
 	dbUrl := fmt.Sprintf(
-		"%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
-		DB_USER,
-		DB_PASS,
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		DB_HOST,
 		DB_PORT,
+		DB_USER,
+		DB_PASS,
 		DB_NAME,
 	)
-	db, err := sql.Open("mysql", dbUrl)
-
+	fmt.Println("Connecting to database...", dbUrl)
+	db, err := sql.Open("postgres", dbUrl)
 	if err != nil {
 		panic(err)
 	}
@@ -48,14 +48,5 @@ func main() {
 	router.Use(middleware.Logger)
 	router.Mount("/", routes.Routes())
 
-	http.ListenAndServe(":3000", router)
+	http.ListenAndServe(":3003", router)
 }
-
-// func apiVersionCtx(version string) func(next http.Handler) http.Handler {
-// 	return func(next http.Handler) http.Handler {
-// 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-// 			r = r.WithContext(context.WithValue(r.Context(), "api.version", version))
-// 			next.ServeHTTP(w, r)
-// 		})
-// 	}
-// }

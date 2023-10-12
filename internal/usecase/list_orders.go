@@ -40,8 +40,6 @@ func (uc ListOrdersUseCase) Execute(companyID string) ([]*dto.OrderResponseDto, 
 			Status:        order.Status,
 			PaymentMethod: order.PaymentMethod,
 			TotalPrice:    order.TotalPrice(),
-			CreatedAt:     order.CreatedAt,
-			UpdatedAt:     order.UpdatedAt,
 		})
 	}
 

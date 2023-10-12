@@ -18,15 +18,7 @@ func NewCreateOrderUseCase(orderRepository entity.OrderRepository) *CreateOrderU
 func (uc CreateOrderUseCase) Execute(input dto.OrderDto) (*dto.OrderOutputDto, error) {
 	orderItems := input.Items
 	var items []*entity.OrderItem
-
-	for _, item := range orderItems {
-		items = append(items, &entity.OrderItem{
-			ID:        item.ID,
-			ProductID: item.ProductID,
-			Quantity:  item.Quantity,
-			Price:     item.Price,
-		})
-	}
+	var itemsDto []dto.OrderItemDto
 
 	order := entity.NewOrder(
 		items,
@@ -35,20 +27,45 @@ func (uc CreateOrderUseCase) Execute(input dto.OrderDto) (*dto.OrderOutputDto, e
 		input.CompanyId,
 	)
 
+	for _, item := range orderItems {
+		newItem := entity.NewOrderItem(
+			order.ID,
+			item.ProductID,
+			item.Quantity,
+			item.Price,
+		)
+
+		items = append(items, &entity.OrderItem{
+			ID:        newItem.ID,
+			OrderID:   newItem.OrderID,
+			ProductID: newItem.ProductID,
+			Quantity:  newItem.Quantity,
+			Price:     newItem.Price,
+		})
+
+		itemsDto = append(itemsDto, dto.OrderItemDto{
+			ID:        newItem.ID,
+			OrderID:   newItem.OrderID,
+			ProductID: newItem.ProductID,
+			Quantity:  newItem.Quantity,
+			Price:     newItem.Price,
+		})
+	}
+	order.Items = items
+
 	err := uc.Repository.Create(order)
 	if err != nil {
 		return nil, err
 	}
 
 	output := &dto.OrderOutputDto{
-		ID:         order.ID,
-		Items:      orderItems,
-		Discount:   order.Discount,
-		Status:     order.Status,
-		TotalPrice: order.TotalPrice(),
-		CompanyId:  order.CompanyId,
-		CreatedAt:  order.CreatedAt,
-		UpdatedAt:  order.UpdatedAt,
+		ID:            order.ID,
+		Items:         itemsDto,
+		Discount:      order.Discount,
+		Status:        order.Status,
+		PaymentMethod: order.PaymentMethod,
+		TotalPrice:    order.TotalPrice(),
+		CompanyId:     order.CompanyId,
 	}
 
 	return output, nil

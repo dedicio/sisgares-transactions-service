@@ -29,6 +29,8 @@ func (or OrderRoutes) Routes() chi.Router {
 		router.Route("/{id}", func(router chi.Router) {
 			router.Get("/", or.Controller.FindById)
 			router.Patch("/status/{status}", or.Controller.UpdateStatus)
+			router.Post("/items", or.Controller.CreateOrderItem)
+			router.Delete("/items/{itemId}", or.Controller.DeleteOrderItem)
 		})
 	})
 

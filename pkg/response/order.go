@@ -19,7 +19,7 @@ func NewOrderResponse(product *dto.OrderResponseDto) *OrderResponse {
 }
 
 type OrdersResponse struct {
-	Orders []*dto.OrderResponseDto
+	Items []*dto.OrderResponseDto
 }
 
 func (pr *OrdersResponse) Render(w http.ResponseWriter, r *http.Request) error {
@@ -28,4 +28,16 @@ func (pr *OrdersResponse) Render(w http.ResponseWriter, r *http.Request) error {
 
 func NewOrdersResponse(products []*dto.OrderResponseDto) *OrdersResponse {
 	return &OrdersResponse{products}
+}
+
+type OrderItemResponse struct {
+	*dto.OrderItemResponseDto
+}
+
+func (pr *OrderItemResponse) Render(w http.ResponseWriter, r *http.Request) error {
+	return nil
+}
+
+func NewOrderItemResponse(product *dto.OrderItemResponseDto) *OrderItemResponse {
+	return &OrderItemResponse{product}
 }

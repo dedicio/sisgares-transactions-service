@@ -47,8 +47,6 @@ func (uc PublishCreateOrderUseCase) Execute(input dto.OrderDto) (*dto.OrderOutpu
 		Status:     order.Status,
 		TotalPrice: order.TotalPrice(),
 		CompanyId:  order.CompanyId,
-		CreatedAt:  order.CreatedAt,
-		UpdatedAt:  order.UpdatedAt,
 	}
 
 	return output, nil

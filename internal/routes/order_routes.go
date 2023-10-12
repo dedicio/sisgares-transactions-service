@@ -10,9 +10,12 @@ type OrderRoutes struct {
 	Controller controllers.OrderController
 }
 
-func NewOrderRoutes(repository entity.OrderRepository) *OrderRoutes {
+func NewOrderRoutes(
+	repository entity.OrderRepository,
+	publisher entity.OrderPublisher,
+) *OrderRoutes {
 	return &OrderRoutes{
-		Controller: *controllers.NewOrderController(repository),
+		Controller: *controllers.NewOrderController(repository, publisher),
 	}
 }
 

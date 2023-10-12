@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/dedicio/sisgares-transactions-service/internal/dto"
@@ -14,11 +15,16 @@ import (
 
 type OrderController struct {
 	Repository entity.OrderRepository
+	Publisher  entity.OrderPublisher
 }
 
-func NewOrderController(orderRepository entity.OrderRepository) *OrderController {
+func NewOrderController(
+	orderRepository entity.OrderRepository,
+	orderPublisher entity.OrderPublisher,
+) *OrderController {
 	return &OrderController{
 		Repository: orderRepository,
+		Publisher:  orderPublisher,
 	}
 }
 
@@ -51,6 +57,7 @@ func (lc *OrderController) Create(w http.ResponseWriter, r *http.Request) {
 	payload := json.NewDecoder(r.Body)
 	order := dto.OrderDto{}
 	err := payload.Decode(&order)
+	fmt.Println("order", order)
 
 	if err != nil {
 		render.Render(w, r, httpResponsePkg.ErrInvalidRequest(err))

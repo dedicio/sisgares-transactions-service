@@ -42,6 +42,10 @@ type OrderRepository interface {
 	FindAllOrderItemsByOrderId(orderId string) ([]*OrderItem, error)
 }
 
+type OrderPublisher interface {
+	Create(order *Order) error
+}
+
 func (o *Order) TotalPrice() float64 {
 	var totalPrice float64
 
@@ -68,5 +72,21 @@ func NewOrder(
 		CompanyId:     companyId,
 		CreatedAt:     utils.Now(),
 		UpdatedAt:     utils.Now(),
+	}
+}
+
+func NewOrderItem(
+	orderId string,
+	productId string,
+	quantity int64,
+	price float64,
+) *OrderItem {
+	id := utils.NewUUID()
+	return &OrderItem{
+		ID:        id,
+		OrderID:   orderId,
+		ProductID: productId,
+		Quantity:  quantity,
+		Price:     price,
 	}
 }

@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"time"
@@ -12,7 +11,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	_ "github.com/lib/pq"
-	rabbitmq "github.com/wagslane/go-rabbitmq"
 )
 
 var (
@@ -47,21 +45,10 @@ func main() {
 	db.SetMaxOpenConns(10)
 	db.SetMaxIdleConns(10)
 
-	// Message Broker
-	fmt.Println("Connecting to message broker...", AMQP_URL)
-	brokerConn, err := rabbitmq.NewConn(
-		AMQP_URL,
-		rabbitmq.WithConnectionOptionsLogging,
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer brokerConn.Close()
-
 	fmt.Println("Message broker connection is been established succesfully")
 
 	router := chi.NewRouter()
-	routes := routes.NewRoutes(db, brokerConn)
+	routes := routes.NewRoutes(db)
 	router.Use(middleware.Logger)
 	router.Mount("/", routes.Routes())
 

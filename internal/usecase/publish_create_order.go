@@ -15,17 +15,17 @@ func NewPublishCreateOrderUseCase(orderPublisher entity.OrderPublisher) *Publish
 	}
 }
 
-func (uc PublishCreateOrderUseCase) Execute(input dto.OrderDto) (*dto.OrderOutputDto, error) {
-	orderItems := input.Items
+func (uc PublishCreateOrderUseCase) Execute(input *dto.OrderOutputDto) error {
 	var items []*entity.OrderItem
+	for _, item := range input.Items {
+		newItem := entity.NewOrderItem(
+			input.ID,
+			item.ProductID,
+			item.Quantity,
+			item.Price,
+		)
 
-	for _, item := range orderItems {
-		items = append(items, &entity.OrderItem{
-			ID:        item.ID,
-			ProductID: item.ProductID,
-			Quantity:  item.Quantity,
-			Price:     item.Price,
-		})
+		items = append(items, newItem)
 	}
 
 	order := entity.NewOrder(
@@ -37,17 +37,8 @@ func (uc PublishCreateOrderUseCase) Execute(input dto.OrderDto) (*dto.OrderOutpu
 
 	err := uc.Publisher.Create(order)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	output := &dto.OrderOutputDto{
-		ID:         order.ID,
-		Items:      orderItems,
-		Discount:   order.Discount,
-		Status:     order.Status,
-		TotalPrice: order.TotalPrice(),
-		CompanyId:  order.CompanyId,
-	}
-
-	return output, nil
+	return nil
 }

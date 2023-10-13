@@ -16,10 +16,9 @@ type Routes struct {
 	BrokerConn *rabbitmq.Conn
 }
 
-func NewRoutes(db *sql.DB, brokerConn *rabbitmq.Conn) *Routes {
+func NewRoutes(db *sql.DB) *Routes {
 	return &Routes{
-		DB:         db,
-		BrokerConn: brokerConn,
+		DB: db,
 	}
 }
 
@@ -32,30 +31,14 @@ func (routes Routes) Routes() chi.Router {
 	router.Use(render.SetContentType(render.ContentTypeJSON))
 
 	orderRepository := repository.NewOrderRepositoryPostgresql(routes.DB)
-
-	brokerChannel, err := createPublisher(routes.BrokerConn)
-	if err != nil {
-		panic(err)
-	}
-	defer brokerChannel.Close()
-
-	publisher := publisher.NewOrderPublisherRabbitmq(brokerChannel)
+	orderPublisher := publisher.NewOrderPublisherRabbitmq()
 
 	router.Route("/v1", func(router chi.Router) {
 		router.Mount("/orders", NewOrderRoutes(
 			orderRepository,
-			publisher,
+			orderPublisher,
 		).Routes())
 	})
 
 	return router
-}
-
-func createPublisher(conn *rabbitmq.Conn) (*rabbitmq.Publisher, error) {
-	return rabbitmq.NewPublisher(
-		conn,
-		rabbitmq.WithPublisherOptionsLogging,
-		rabbitmq.WithPublisherOptionsExchangeName("transactions_orders"),
-		rabbitmq.WithPublisherOptionsExchangeDeclare,
-	)
 }

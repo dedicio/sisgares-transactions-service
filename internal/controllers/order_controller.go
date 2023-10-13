@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/dedicio/sisgares-transactions-service/internal/dto"
@@ -57,7 +56,6 @@ func (oc *OrderController) Create(w http.ResponseWriter, r *http.Request) {
 	payload := json.NewDecoder(r.Body)
 	order := dto.OrderDto{}
 	err := payload.Decode(&order)
-	fmt.Println("order", order)
 
 	if err != nil {
 		render.Render(w, r, httpResponsePkg.ErrInvalidRequest(err))
@@ -80,6 +78,8 @@ func (oc *OrderController) Create(w http.ResponseWriter, r *http.Request) {
 		PaymentMethod: orderSaved.PaymentMethod,
 		TotalPrice:    orderSaved.TotalPrice,
 	}
+
+	go usecase.NewPublishCreateOrderUseCase(oc.Publisher).Execute(orderSaved)
 
 	render.Render(w, r, httpResponsePkg.NewOrderResponse(output))
 }

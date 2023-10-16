@@ -36,8 +36,6 @@ func (pr *OrderRepositoryPostgresql) FindByID(id string) (*entity.Order, error) 
 		&order.Discount,
 		&order.Status,
 		&order.PaymentMethod,
-		&order.CreatedAt,
-		&order.UpdatedAt,
 	)
 
 	if err != nil {
@@ -70,19 +68,18 @@ func (pr *OrderRepositoryPostgresql) FindByID(id string) (*entity.Order, error) 
 }
 
 func (pr *OrderRepositoryPostgresql) FindAll(companyID string) ([]*entity.Order, error) {
-	sqlOrderStatement := `
+	sql := `
 		SELECT
 			id,
 			discount,
 			status,
-			payment_method,
-			created_at,
-			updated_at
+			payment_method
 		FROM orders 
-		WHERE company_id = $1
+		WHERE
+			company_id = $1
 			AND deleted_at IS NULL
 	`
-	rows, err := pr.db.Query(sqlOrderStatement, companyID)
+	rows, err := pr.db.Query(sql, companyID)
 	if err != nil {
 		return nil, err
 	}
@@ -96,8 +93,6 @@ func (pr *OrderRepositoryPostgresql) FindAll(companyID string) ([]*entity.Order,
 			&order.Discount,
 			&order.Status,
 			&order.PaymentMethod,
-			&order.CreatedAt,
-			&order.UpdatedAt,
 		)
 		if err != nil {
 			return nil, err
@@ -159,6 +154,7 @@ func (pr *OrderRepositoryPostgresql) Create(order *entity.Order) error {
 			INSERT INTO
 				order_items (
 					id,
+					company_id,
 					order_id,
 					product_id,
 					quantity,
@@ -172,6 +168,7 @@ func (pr *OrderRepositoryPostgresql) Create(order *entity.Order) error {
 				$3,
 				$4,
 				$5,
+				$6,
 				NOW(),
 				NOW()
 			)
@@ -179,6 +176,7 @@ func (pr *OrderRepositoryPostgresql) Create(order *entity.Order) error {
 		_, err := pr.db.Exec(
 			sql,
 			item.ID,
+			order.CompanyId,
 			order.ID,
 			item.ProductID,
 			item.Quantity,
@@ -216,9 +214,11 @@ func (pr *OrderRepositoryPostgresql) UpdateStatus(orderId string, status string)
 	return nil
 }
 
-func (pr *OrderRepositoryPostgresql) FindAllOrderItemsByOrderId(orderId string) ([]*entity.OrderItem, error) {
+func (or *OrderRepositoryPostgresql) FindAllOrderItemsByOrderId(orderID string) ([]*entity.OrderItem, error) {
 	sql := `
 		SELECT
+			id,
+			order_id,
 			product_id,
 			quantity,
 			price
@@ -226,7 +226,7 @@ func (pr *OrderRepositoryPostgresql) FindAllOrderItemsByOrderId(orderId string) 
 		WHERE order_id = $1
 			AND deleted_at IS NULL
 	`
-	rows, err := pr.db.Query(sql)
+	rows, err := or.db.Query(sql, orderID)
 	if err != nil {
 		return nil, err
 	}
@@ -236,6 +236,8 @@ func (pr *OrderRepositoryPostgresql) FindAllOrderItemsByOrderId(orderId string) 
 	for rows.Next() {
 		var orderItem entity.OrderItem
 		err := rows.Scan(
+			&orderItem.ID,
+			&orderItem.OrderID,
 			&orderItem.ProductID,
 			&orderItem.Quantity,
 			&orderItem.Price,
@@ -251,4 +253,59 @@ func (pr *OrderRepositoryPostgresql) FindAllOrderItemsByOrderId(orderId string) 
 	}
 
 	return orderItems, nil
+}
+
+func (or *OrderRepositoryPostgresql) CreateOrderItem(orderItem *entity.OrderItem) error {
+	sql := `
+		INSERT INTO
+			order_items (
+				id,
+				order_id,
+				product_id,
+				quantity,
+				price,
+				created_at,
+				updated_at
+			)
+		VALUES (
+			$1,
+			$2,
+			$3,
+			$4,
+			$5,
+			NOW(),
+			NOW()
+		)
+	`
+	_, err := or.db.Exec(
+		sql,
+		orderItem.ID,
+		orderItem.OrderID,
+		orderItem.ProductID,
+		orderItem.Quantity,
+		orderItem.Price,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (or *OrderRepositoryPostgresql) DeleteOrderItem(orderItemId string) error {
+	sql := `
+		DELETE FROM order_items
+		WHERE id = $1
+	`
+	_, err := or.db.Exec(
+		sql,
+		orderItemId,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

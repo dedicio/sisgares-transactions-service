@@ -30,8 +30,6 @@ type Order struct {
 	Status        string
 	PaymentMethod string
 	CompanyId     string
-	CreatedAt     string
-	UpdatedAt     string
 }
 
 type OrderRepository interface {
@@ -40,6 +38,12 @@ type OrderRepository interface {
 	FindByID(id string) (*Order, error)
 	UpdateStatus(id string, status string) error
 	FindAllOrderItemsByOrderId(orderId string) ([]*OrderItem, error)
+	CreateOrderItem(orderItem *OrderItem) error
+	DeleteOrderItem(orderItemId string) error
+}
+
+type OrderPublisher interface {
+	Create(order *Order) error
 }
 
 func (o *Order) TotalPrice() float64 {
@@ -63,10 +67,24 @@ func NewOrder(
 		ID:            id,
 		Items:         items,
 		Discount:      discount,
-		Status:        OrderStatusPending,
+		Status:        OrderStatusOpen,
 		PaymentMethod: paymentMethod,
 		CompanyId:     companyId,
-		CreatedAt:     utils.Now(),
-		UpdatedAt:     utils.Now(),
+	}
+}
+
+func NewOrderItem(
+	orderId string,
+	productId string,
+	quantity int64,
+	price float64,
+) *OrderItem {
+	id := utils.NewUUID()
+	return &OrderItem{
+		ID:        id,
+		OrderID:   orderId,
+		ProductID: productId,
+		Quantity:  quantity,
+		Price:     price,
 	}
 }

@@ -45,7 +45,5 @@ func (uc FindOrderByIdUseCase) Execute(id string) (*dto.OrderResponseDto, error)
 		Status:        order.Status,
 		PaymentMethod: order.PaymentMethod,
 		TotalPrice:    order.TotalPrice(),
-		CreatedAt:     order.CreatedAt,
-		UpdatedAt:     order.UpdatedAt,
 	}, nil
 }

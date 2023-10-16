@@ -10,9 +10,12 @@ type OrderRoutes struct {
 	Controller controllers.OrderController
 }
 
-func NewOrderRoutes(repository entity.OrderRepository) *OrderRoutes {
+func NewOrderRoutes(
+	repository entity.OrderRepository,
+	publisher entity.OrderPublisher,
+) *OrderRoutes {
 	return &OrderRoutes{
-		Controller: *controllers.NewOrderController(repository),
+		Controller: *controllers.NewOrderController(repository, publisher),
 	}
 }
 
@@ -26,6 +29,8 @@ func (or OrderRoutes) Routes() chi.Router {
 		router.Route("/{id}", func(router chi.Router) {
 			router.Get("/", or.Controller.FindById)
 			router.Patch("/status/{status}", or.Controller.UpdateStatus)
+			router.Post("/items", or.Controller.CreateOrderItem)
+			router.Delete("/items/{itemId}", or.Controller.DeleteOrderItem)
 		})
 	})
 

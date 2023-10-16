@@ -27,6 +27,7 @@ func (uc ListOrdersUseCase) Execute(companyID string) ([]*dto.OrderResponseDto, 
 		for _, orderItem := range order.Items {
 			orderItems = append(orderItems, dto.OrderItemDto{
 				ID:        orderItem.ID,
+				OrderID:   orderItem.OrderID,
 				ProductID: orderItem.ProductID,
 				Quantity:  orderItem.Quantity,
 				Price:     orderItem.Price,
@@ -40,8 +41,6 @@ func (uc ListOrdersUseCase) Execute(companyID string) ([]*dto.OrderResponseDto, 
 			Status:        order.Status,
 			PaymentMethod: order.PaymentMethod,
 			TotalPrice:    order.TotalPrice(),
-			CreatedAt:     order.CreatedAt,
-			UpdatedAt:     order.UpdatedAt,
 		})
 	}
 

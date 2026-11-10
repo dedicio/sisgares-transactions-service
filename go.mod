@@ -8,7 +8,7 @@ require (
 	github.com/google/uuid v1.3.1
 )
 
-require github.com/rabbitmq/amqp091-go v1.7.0 // indirect
+require github.com/rabbitmq/amqp091-go v1.14.0 // indirect
 
 require (
 	github.com/ajg/form v1.5.1 // indirect
